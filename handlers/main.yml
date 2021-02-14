@@ -1,0 +1,8 @@
+---
+- name: reload monit
+  tags: monit
+  become: true
+  service:
+    name: monit
+    state: reloaded
+...

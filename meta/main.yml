@@ -1,0 +1,16 @@
+---
+dependencies: []
+galaxy_info:
+  role_name: monit
+  author: tkimball83
+  description: RHEL/CentOS - Easy, proactive monitoring of processes, programs, files, directories, filesystems and hosts
+  license: GPLv3
+  min_ansible_version: 2.9
+  platforms:
+    - name: EL
+      versions:
+        - all
+  galaxy_tags:
+    - monit
+    - monitoring
+...

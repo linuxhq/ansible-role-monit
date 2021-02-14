@@ -1,0 +1,73 @@
+# {{ ansible_managed }}
+
+set daemon {{ monit_daemon }} with start delay {{ monit_start_delay }}
+set log {{ monit_log }}
+set mailserver {{ monit_mailserver }}
+
+set mail-format {
+{% for mf_key, mf_value in monit_mailformat.items() %}
+    {{ mf_key }}: {{ mf_value|indent(13) }}
+{% endfor -%}
+}
+
+{% for alert in monit_alert %}
+{%   if alert.recipient is defined %}
+{%     if alert.events is defined and alert.events|length > 0 %}
+{%       if alert.condition is defined %}
+set alert {{ alert.recipient }} {{ alert.condition }} { {{ alert.events|join(', ') }} }
+{%       else %}
+set alert {{ alert.recipient }} { {{ alert.events|join(', ') }} }
+{%       endif %}
+{%     else %}
+set alert {{ alert.recipient }}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+
+set httpd
+{% for httpd in monit_httpd %}
+    {{ httpd }}
+{% endfor %}
+{% if monit_httpd_ssl|length > 0 %}
+    with ssl {
+{%   for ssl_key, ssl_value in monit_httpd_ssl.items() %}
+         {{ ssl_key }}: {{ ssl_value }}
+{%   endfor %}
+    }
+{% endif %}
+
+# monit_filesystem: {{ monit_filesystem|length }}
+{% if monit_filesystem|length > 0 %}
+
+{%   for filesystem in monit_filesystem %}
+{%     if filesystem.name is defined and filesystem.path is defined and filesystem.actions|length > 0 %}
+check filesystem {{ filesystem.name }}
+      path {{ filesystem.path }}
+{%       for action in filesystem.actions %}
+      {{ action }}
+{%       endfor %}
+{%     endif %}
+{%     if not loop.last %}
+
+{%     endif %}
+{%   endfor %}
+{% endif %}
+
+# monit_program: {{ monit_program|length }}
+{% if monit_program|length > 0 %}
+
+{%   for program in monit_program %}
+{%     if program.name is defined and program.path is defined and program.actions|length > 0 %}
+check program {{ program.name }}
+      path "{{ program.path }}"
+{%       for action in program.actions %}
+      {{ action }}
+{%       endfor %}
+{%     endif %}
+{%     if not loop.last %}
+
+{%     endif %}
+{%   endfor %}
+{% endif %}
+
+include {{ monit_include }}

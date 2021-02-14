@@ -1,0 +1,29 @@
+---
+- name: Ensure the monit package is present
+  tags: monit
+  become: true
+  yum:
+    name: monit
+    state: present
+  register: monit_yum
+
+- name: Overlay monitrc configuration
+  tags: monit
+  become: true
+  template:
+    src: monitrc.j2
+    dest: /etc/monitrc
+    owner: root
+    group: root
+    mode: 0600
+    validate: '/bin/monit -t -c %s'
+  notify: reload monit
+
+- name: Ensure that monit is started and enabled on boot
+  tags: monit
+  become: true
+  service:
+    enabled: yes
+    name: monit
+    state: started
+...
